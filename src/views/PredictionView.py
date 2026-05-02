@@ -139,10 +139,10 @@ class PredictionView(ctk.CTkFrame):
             ("Recall", "Recall", COLORS["accent_primary"]),
             ("Precision", "Precision", COLORS["accent_secondary"]),
             ("F1 Score", "F1 Score", COLORS["accent_warning"]),
-            ("Accuracy", "Accuracy", COLORS["accent_success"]),
         ]):
-            row = i // 2
-            col = i % 2
+            row = 0
+            col = i
+            metrics_grid.grid_columnconfigure(i, weight=1)
             cell = ctk.CTkFrame(metrics_grid, fg_color="transparent")
             cell.grid(row=row, column=col, sticky="ew", padx=4, pady=2)
             
@@ -423,7 +423,7 @@ class PredictionView(ctk.CTkFrame):
         base_name = model_name.rsplit('.', 1)[0]
         score_file = os.path.join(AppConfig.MODEL_OUT_DIR, base_name + ".txt")
         
-        metrics = {'Recall': 0, 'Precision': 0, 'F1 Score': 0, 'Accuracy': 0}
+        metrics = {'Recall': 0, 'Precision': 0, 'F1 Score': 0}
         
         if os.path.exists(score_file):
             try:
@@ -438,11 +438,10 @@ class PredictionView(ctk.CTkFrame):
                             nums.append(float(p))
                         except ValueError:
                             continue
-                    if len(nums) >= 4:
+                    if len(nums) >= 3:
                         metrics['Recall'] = nums[0]
                         metrics['Precision'] = nums[1]
                         metrics['F1 Score'] = nums[2]
-                        metrics['Accuracy'] = nums[3]
             except Exception:
                 pass
         

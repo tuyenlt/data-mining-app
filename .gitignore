@@ -67,7 +67,7 @@ Model files (ML/AI)
 
 *.pkl
 *.joblib
-models/
+#models/
 
 =========================
 Cache

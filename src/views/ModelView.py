@@ -87,7 +87,7 @@ class ModelView(ctk.CTkFrame):
         sort_menu = StyledOptionMenu(
             sort_frame,
             variable=self.sort_var,
-            values=["Recall", "Precision", "F1 Score", "Accuracy", "Ngày tạo", "Model Name"],
+            values=["Recall", "Precision", "F1 Score", "Ngày tạo", "Model Name"],
             command=self._on_sort_changed,
             width=150,
             height=32,
@@ -114,7 +114,7 @@ class ModelView(ctk.CTkFrame):
         
         self.model_table = DataTable(
             table_card,
-            columns=["Model", "Type", "Recall", "Precision", "F1 Score", "Accuracy", "File"]
+            columns=["Model", "Type", "Recall", "Precision", "F1 Score", "File"]
         )
         self.model_table.pack(fill="both", expand=True, padx=20, pady=(0, 16))
         
@@ -136,7 +136,6 @@ class ModelView(ctk.CTkFrame):
             ("Recall", COLORS["accent_primary"]),
             ("Precision", COLORS["accent_secondary"]),
             ("F1 Score", COLORS["accent_warning"]),
-            ("Accuracy", COLORS["accent_success"]),
         ]:
             mc = MetricCard(metrics_card, title=metric_name, value="—", color=color)
             mc.pack(fill="x", padx=20, pady=(0, 8))
@@ -160,33 +159,25 @@ class ModelView(ctk.CTkFrame):
         train_inner.pack(fill="x", padx=20, pady=(0, 8))
         
         algo_label = ctk.CTkLabel(
-            train_inner, text="Chọn thuật toán:",
+            train_inner, text="Thuật toán:",
             font=FONTS["body_bold"],
             text_color=COLORS["text_secondary"],
             anchor="w"
         )
         algo_label.pack(fill="x")
         
-        self.algo_var = ctk.StringVar(value="Random Forest")
-        
-        algo_frame = ctk.CTkFrame(train_inner, fg_color="transparent")
-        algo_frame.pack(fill="x", pady=(6, 12))
-        
-        for algo_name in ["Random Forest", "XGBoost", "Logistic Regression"]:
-            rb = ctk.CTkRadioButton(
-                algo_frame,
-                text=algo_name,
-                variable=self.algo_var,
-                value=algo_name,
-                font=FONTS["body"],
-                text_color=COLORS["text_primary"],
-                fg_color=COLORS["accent_primary"],
-                hover_color=COLORS["accent_primary_hover"],
-                border_color=COLORS["border"],
-                radiobutton_width=22,
-                radiobutton_height=22,
-            )
-            rb.pack(anchor="w", pady=3)
+        algo_badge_frame = ctk.CTkFrame(
+            train_inner,
+            fg_color=COLORS["accent_primary"],
+            corner_radius=8,
+        )
+        algo_badge_frame.pack(anchor="w", pady=(6, 12))
+        ctk.CTkLabel(
+            algo_badge_frame,
+            text="  XGBoost  ",
+            font=FONTS["body_bold"],
+            text_color="#FFFFFF",
+        ).pack(padx=4, pady=4)
         
         data_label = ctk.CTkLabel(
             train_inner, text="Dữ liệu train:",
@@ -272,13 +263,15 @@ class ModelView(ctk.CTkFrame):
                 model_type = "Random Forest"
             elif "logistic_regression" in model_file:
                 model_type = "Logistic Regression"
-            else:
+            elif "fraud_model_v" in model_file or "xgboost" in model_file:
                 model_type = "XGBoost"
+            else:
+                model_type = "Unknown"
             base_name = model_file.rsplit('.', 1)[0]
             score_file = base_name + ".txt"
             score_path = os.path.join(model_dir, score_file)
             
-            recall = precision = f1 = accuracy = 0.0
+            recall = precision = f1 = 0.0
             
             if os.path.exists(score_path):
                 try:
@@ -296,12 +289,12 @@ class ModelView(ctk.CTkFrame):
                                     nums.append(float(p))
                                 except ValueError:
                                     continue
-                            if len(nums) >= 4:
-                                recall, precision, f1, accuracy = nums[:4]
+                            if len(nums) >= 3:
+                                recall, precision, f1 = nums[:3]
                 except Exception:
                     pass
             
-            # Extract date from filename (e.g. random_forest_20260501_162110)
+            # Extract date from filename
             import re
             date_match = re.search(r'(\d{8}_\d{6})', base_name)
             date_str = date_match.group(1) if date_match else '00000000_000000'
@@ -312,7 +305,6 @@ class ModelView(ctk.CTkFrame):
                 'Recall': recall,
                 'Precision': precision,
                 'F1 Score': f1,
-                'Accuracy': accuracy,
                 'Date': date_str,
                 'File': model_file,
             })
@@ -334,16 +326,16 @@ class ModelView(ctk.CTkFrame):
         if self.models_data:
             df = pd.DataFrame(self.models_data)
             # Format numeric columns
-            for col in ['Recall', 'Precision', 'F1 Score', 'Accuracy']:
+            for col in ['Recall', 'Precision', 'F1 Score']:
                 df[col] = df[col].apply(lambda x: f"{x:.4f}" if x > 0 else "—")
             
-            self.model_table.set_columns(["Model", "Type", "Recall", "Precision", "F1 Score", "Accuracy", "File"])
+            self.model_table.set_columns(["Model", "Type", "Recall", "Precision", "F1 Score", "File"])
             self.model_table.insert_dataframe(df)
             
             # Update best model metrics
             best = self.models_data[0]
             self.best_model_label.configure(text=f"{best['Type']} — {best['File']}")
-            for metric_name in ['Recall', 'Precision', 'F1 Score', 'Accuracy']:
+            for metric_name in ['Recall', 'Precision', 'F1 Score']:
                 val = best.get(metric_name, 0)
                 self.metric_cards[metric_name].set_value(
                     f"{val:.4f}" if val > 0 else "—"
@@ -401,13 +393,11 @@ class ModelView(ctk.CTkFrame):
         self.stop_btn.configure(state="normal")
         self.progress_card.clear_log()
         
-        algo = self.algo_var.get()
-        
-        # Run training in background thread
-        thread = threading.Thread(target=self._train_worker, args=(algo, data_path), daemon=True)
+        # Run training in background thread (thuật toán cố định: XGBoost)
+        thread = threading.Thread(target=self._train_worker, args=(data_path,), daemon=True)
         thread.start()
     
-    def _train_worker(self, algo, data_path):
+    def _train_worker(self, data_path):
         import sys
         import io
         
@@ -453,29 +443,13 @@ class ModelView(ctk.CTkFrame):
             
             sys.stdout = TeeOutput(old_stdout, captured, self._log)
             
-            if algo == "Random Forest":
-                self._update_progress(0.30, "Đang train Random Forest...")
-                self._log("\n" + "="*50)
-                self._log("BẮT ĐẦU TRAIN RANDOM FOREST")
-                self._log("="*50)
-                self.training_service.startRandomForest(X_train, X_test, y_train, y_test)
-                self._update_progress(0.90, "Random Forest hoàn thành!")
-            
-            elif algo == "XGBoost":
-                self._update_progress(0.30, "Đang train XGBoost...")
-                self._log("\n" + "="*50)
-                self._log("BẮT ĐẦU TRAIN XGBOOST")
-                self._log("="*50)
-                self.training_service.startXGBoost(X_train, X_test, y_train, y_test)
-                self._update_progress(0.90, "XGBoost hoàn thành!")
-            
-            elif algo == "Logistic Regression":
-                self._update_progress(0.30, "Đang train Logistic Regression...")
-                self._log("\n" + "="*50)
-                self._log("BẮT ĐẦU TRAIN LOGISTIC REGRESSION")
-                self._log("="*50)
-                self.training_service.startLogisticRegression(X_train, X_test, y_train, y_test)
-                self._update_progress(0.90, "Logistic Regression hoàn thành!")
+            # Thuật toán cố định: XGBoost
+            self._update_progress(0.30, "Đang train XGBoost...")
+            self._log("\n" + "="*50)
+            self._log("BẮT ĐẦU TRAIN XGBOOST")
+            self._log("="*50)
+            self.training_service.startXGBoost(X_train, X_test, y_train, y_test)
+            self._update_progress(0.90, "XGBoost hoàn thành!")
             
             sys.stdout = old_stdout
             

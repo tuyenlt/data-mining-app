@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime
 import joblib
@@ -15,10 +16,25 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, recall_score, precision_score, f1_score, accuracy_score
 from xgboost import XGBClassifier
 from sklearn.linear_model import LogisticRegression
+from src.services.ModelUtils import TargetEncoder, encode_gender
 
 class ModelTrainningService:
     def __init__(self):
         pass
+    
+    def _get_next_version(self) -> int:
+        """Scan MODEL_OUT_DIR and return the next model version number."""
+        import re
+        model_dir = AppConfig.MODEL_OUT_DIR
+        if not os.path.exists(model_dir):
+            return 1
+        pattern = re.compile(r'fraud_model_v(\d+)_')
+        max_v = 0
+        for fname in os.listdir(model_dir):
+            m = pattern.search(fname)
+            if m:
+                max_v = max(max_v, int(m.group(1)))
+        return max_v + 1
     
     def splitData(self, df: pd.DataFrame):
         X = df.drop(columns=['is_fraud'])
@@ -213,7 +229,7 @@ class ModelTrainningService:
 
         total_elapsed = time.time() - total_start
         print(f"\n{'='*60}")
-        print(f"✅ TỔNG THỜI GIAN TRAIN XGBOOST: {total_elapsed:.2f}s ({total_elapsed/60:.1f} phút)")
+        print(f"✅ TỔNG THỚI GIAN TRAIN XGBOOST: {total_elapsed:.2f}s ({total_elapsed/60:.1f} phút)")
         print(f"{'='*60}")
 
         # Tạo lại pipeline đã fit để lưu
@@ -225,21 +241,24 @@ class ModelTrainningService:
         xg_y_pred = xg_pipeline.predict(X_test)
         print(f"  ✓ Predict xong trong {time.time() - pred_start:.2f}s")
 
+        # Đặt tên model: fraud_model_v(x)_(timestamp).pkl
+        version = self._get_next_version()
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        joblib.dump(xg_pipeline, AppConfig.MODEL_OUT_DIR + f"/xgboost_{timestamp}.pkl")
+        model_filename = f"fraud_model_v{version}_{timestamp}"
+        joblib.dump(xg_pipeline, AppConfig.MODEL_OUT_DIR + f"/{model_filename}.pkl")
+        print(f"\n💾 Model đã lưu: {model_filename}.pkl")
 
         smote_xg_recall = recall_score(y_test, xg_y_pred)
         smote_xg_precision = precision_score(y_test, xg_y_pred)
         smote_xg_f1 = f1_score(y_test, xg_y_pred)
-        smote_xg_accuracy = accuracy_score(y_test, xg_y_pred)
 
-        xg = [(smote_xg_recall, smote_xg_precision, smote_xg_f1, smote_xg_accuracy)]
+        xg = [(smote_xg_recall, smote_xg_precision, smote_xg_f1)]
 
-        xg_score = pd.DataFrame(data=xg, columns=['Recall', 'Precision', 'F1 Score', 'Accuracy'])
+        xg_score = pd.DataFrame(data=xg, columns=['Recall', 'Precision', 'F1 Score'])
         print(f"\n📊 Score:")
         print(xg_score)
 
-        with open(AppConfig.MODEL_OUT_DIR + f"/xgboost_{timestamp}.txt", "w") as f:
+        with open(AppConfig.MODEL_OUT_DIR + f"/{model_filename}.txt", "w") as f:
             f.write(xg_score.to_string(index=False))
         return xg_pipeline
     
@@ -289,33 +308,3 @@ class ModelTrainningService:
 
 
 
-
-class TargetEncoder(BaseEstimator, TransformerMixin):
-    def __init__(self, cols):
-        self.cols = cols
-        self.mapping = {}
-        self.global_mean = None
-
-    def fit(self, X, y):
-        self.global_mean = y.mean()
-        df = X.copy()
-        df['target'] = y
-
-        for col in self.cols:
-            self.mapping[col] = df.groupby(col)['target'].mean()
-
-        return self
-
-    def transform(self, X):
-        X = X.copy()
-
-        for col in self.cols:
-            X[col] = X[col].map(self.mapping[col])
-            X[col] = X[col].fillna(self.global_mean)
-
-        return X
-
-def encode_gender(X):
-    X = X.copy()
-    X['gender'] = X['gender'].map({'M': 0, 'F': 1})
-    return X

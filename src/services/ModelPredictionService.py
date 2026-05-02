@@ -4,6 +4,13 @@ import pandas as pd
 from src.config.AppConfig import AppConfig
 from datetime import datetime
 import os
+import sys
+import __main__
+from src.services.ModelUtils import TargetEncoder, encode_gender
+
+# Fix for loading models pickled with __main__ namespace
+__main__.TargetEncoder = TargetEncoder
+__main__.encode_gender = encode_gender
 
 
 class ModelPredictionService:
