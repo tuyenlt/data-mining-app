@@ -32,7 +32,7 @@ DataMinningApp/
 │       ├── ModelView.py      # Trang quản lý & train model
 │       └── PredictionView.py # Trang dự đoán giao dịch
 └── requirements.txt
-```
+```         
 
 ## 🚀 Cài đặt & Chạy
 

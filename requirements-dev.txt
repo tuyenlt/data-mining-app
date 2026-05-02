@@ -9,7 +9,6 @@ joblib
 kiwisolver
 matplotlib
 numpy
-nvidia-nccl-cu12
 packaging
 pandas
 pillow
