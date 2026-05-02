@@ -12,6 +12,7 @@ from src.components.widgets import (
     show_info, show_warning, show_error, show_success
 )
 from src.services.ModelPredictionService import ModelPredictionService
+from src.config.icons import icon_md, icon_lg, icon_xl
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -50,8 +51,11 @@ class PredictionView(ctk.CTkFrame):
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=0, pady=(0, 16))
         
+        self._icon_search = icon_lg("search")
         title = ctk.CTkLabel(
-            header_frame, text="🔍  Dự đoán giao dịch",
+            header_frame, text="  Dự đoán giao dịch",
+            image=self._icon_search,
+            compound="left",
             font=FONTS["title"],
             text_color=COLORS["text_primary"],
             anchor="w"
@@ -78,7 +82,7 @@ class PredictionView(ctk.CTkFrame):
         left_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
         
         # Model selection card
-        model_card = StyledCard(left_panel, title="🤖 Chọn Model")
+        model_card = StyledCard(left_panel, title="Chọn Model")
         model_card.pack(fill="x", pady=(0, 12))
         
         model_inner = ctk.CTkFrame(model_card, fg_color="transparent")
@@ -94,14 +98,16 @@ class PredictionView(ctk.CTkFrame):
         )
         self.model_menu.pack(side="left", fill="x", expand=True)
         
+        self._icon_refresh_sm = icon_md("refresh")
         refresh_btn = StyledButton(
-            model_inner, text="⟳", width=38, variant="secondary",
+            model_inner, text="", width=38, variant="secondary",
+            image=self._icon_refresh_sm,
             command=self._refresh_models
         )
         refresh_btn.pack(side="right", padx=(8, 0))
         
         self.model_status = ctk.CTkLabel(
-            model_card, text="⚪ Chưa chọn model",
+            model_card, text="Chưa chọn model",
             font=FONTS["small"],
             text_color=COLORS["text_muted"],
             anchor="w"
@@ -112,8 +118,11 @@ class PredictionView(ctk.CTkFrame):
         self.metrics_frame = ctk.CTkFrame(model_card, fg_color=COLORS["bg_input"], corner_radius=10)
         self.metrics_frame.pack(fill="x", padx=20, pady=(0, 12))
         
+        self._icon_chart = icon_md("chart")
         metrics_title = ctk.CTkLabel(
-            self.metrics_frame, text="📊 Chỉ số đánh giá",
+            self.metrics_frame, text=" Chỉ số đánh giá",
+            image=self._icon_chart,
+            compound="left",
             font=FONTS["small_bold"],
             text_color=COLORS["text_secondary"],
             anchor="w"
@@ -147,7 +156,7 @@ class PredictionView(ctk.CTkFrame):
             self.metric_labels[metric_key] = val_lbl
         
         # Input method tabs
-        input_card = StyledCard(left_panel, title="📝 Nhập dữ liệu")
+        input_card = StyledCard(left_panel, title="Nhập dữ liệu")
         input_card.pack(fill="both", expand=True, pady=(0, 12))
         
         # Tab buttons
@@ -155,13 +164,15 @@ class PredictionView(ctk.CTkFrame):
         tab_frame.pack(fill="x", padx=20, pady=(0, 8))
         
         self.tab_manual_btn = StyledButton(
-            tab_frame, text="✏ Nhập tay", width=130,
+            tab_frame, text="Nhập tay", width=130,
             command=lambda: self._switch_tab("manual")
         )
         self.tab_manual_btn.pack(side="left", padx=(0, 8))
         
+        self._icon_file_tab = icon_md("file")
         self.tab_csv_btn = StyledButton(
-            tab_frame, text="📄 Import CSV", width=130,
+            tab_frame, text=" Import CSV", width=140,
+            image=self._icon_file_tab, compound="left",
             variant="secondary",
             command=lambda: self._switch_tab("csv")
         )
@@ -181,7 +192,7 @@ class PredictionView(ctk.CTkFrame):
         right_panel.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
         
         # Results card
-        result_card = StyledCard(right_panel, title="📊 Kết quả dự đoán")
+        result_card = StyledCard(right_panel, title="Kết quả dự đoán")
         result_card.pack(fill="both", expand=True)
         
         # Summary stats
@@ -196,14 +207,14 @@ class PredictionView(ctk.CTkFrame):
         self.stat_total.pack(side="left", padx=(0, 16))
         
         self.stat_fraud = ctk.CTkLabel(
-            self.stats_frame, text="⚠ Gian lận: 0",
+            self.stats_frame, text="Gian lận: 0",
             font=FONTS["small_bold"],
             text_color=COLORS["fraud"]
         )
         self.stat_fraud.pack(side="left", padx=(0, 16))
         
         self.stat_legit = ctk.CTkLabel(
-            self.stats_frame, text="✓ Hợp lệ: 0",
+            self.stats_frame, text="Hợp lệ: 0",
             font=FONTS["small_bold"],
             text_color=COLORS["legit"]
         )
@@ -220,8 +231,10 @@ class PredictionView(ctk.CTkFrame):
         action_frame = ctk.CTkFrame(result_card, fg_color="transparent")
         action_frame.pack(fill="x", padx=20, pady=(0, 16))
         
+        self._icon_save = icon_md("save")
         self.save_btn = StyledButton(
-            action_frame, text="💾 Lưu kết quả CSV", variant="success",
+            action_frame, text=" Lưu kết quả CSV", variant="success",
+            image=self._icon_save, compound="left",
             command=self._save_results, state="disabled"
         )
         self.save_btn.pack(side="right")
@@ -262,14 +275,16 @@ class PredictionView(ctk.CTkFrame):
         btn_container.grid(row=len(TRANSACTION_FIELDS) // 2 + 1, column=0, columnspan=2,
                           sticky="ew", pady=(12, 0))
         
+        self._icon_rocket_pred = icon_md("rocket")
         predict_btn = StyledButton(
-            btn_container, text="🚀 Dự đoán", width=200,
+            btn_container, text=" Dự đoán", width=200,
+            image=self._icon_rocket_pred, compound="left",
             command=self._predict_manual
         )
         predict_btn.pack(side="right")
         
         clear_btn = StyledButton(
-            btn_container, text="🗑 Xóa", width=100,
+            btn_container, text="Xóa", width=100,
             variant="secondary",
             command=self._clear_manual
         )
@@ -290,9 +305,10 @@ class PredictionView(ctk.CTkFrame):
         drop_zone.pack(fill="x", pady=(8, 12))
         drop_zone.pack_propagate(False)
         
+        self._icon_folder_drop = icon_xl("folder")
         drop_icon = ctk.CTkLabel(
-            drop_zone, text="📁",
-            font=("Segoe UI", 36),
+            drop_zone, text="",
+            image=self._icon_folder_drop,
         )
         drop_icon.pack(pady=(16, 4))
         
@@ -303,16 +319,20 @@ class PredictionView(ctk.CTkFrame):
         )
         self.csv_label.pack()
         
+        self._icon_folder_browse = icon_md("folder")
         browse_btn = StyledButton(
-            self.csv_frame, text="📂 Chọn file CSV",
+            self.csv_frame, text=" Chọn file CSV",
+            image=self._icon_folder_browse, compound="left",
             command=self._browse_csv
         )
         browse_btn.pack(fill="x", pady=(0, 12))
         
         self.csv_path_var = ctk.StringVar()
         
+        self._icon_rocket_csv = icon_md("rocket")
         predict_csv_btn = StyledButton(
-            self.csv_frame, text="🚀 Dự đoán từ CSV", width=200,
+            self.csv_frame, text=" Dự đoán từ CSV", width=200,
+            image=self._icon_rocket_csv, compound="left",
             command=self._predict_csv
         )
         predict_csv_btn.pack(fill="x")
@@ -365,7 +385,7 @@ class PredictionView(ctk.CTkFrame):
             self.model_menu.configure(values=["Không có model"])
             self.model_var.set("Không có model")
             self.model_status.configure(
-                text="⚪ Chưa có model. Vui lòng train trước.",
+                text="Chưa có model. Vui lòng train trước.",
                 text_color=COLORS["accent_warning"]
             )
     
@@ -376,9 +396,14 @@ class PredictionView(ctk.CTkFrame):
             model_path = os.path.join(AppConfig.MODEL_OUT_DIR, model_name)
             self.prediction_service.load_model(model_path)
             
-            model_type = "Random Forest" if "random_forest" in model_name else "XGBoost"
+            if "random_forest" in model_name:
+                model_type = "Random Forest"
+            elif "logistic_regression" in model_name:
+                model_type = "Logistic Regression"
+            else:
+                model_type = "XGBoost"
             self.model_status.configure(
-                text=f"🟢 Đã load: {model_type} ({model_name})",
+                text=f"Đã load: {model_type} ({model_name})",
                 text_color=COLORS["accent_success"]
             )
             
@@ -387,7 +412,7 @@ class PredictionView(ctk.CTkFrame):
             
         except Exception as e:
             self.model_status.configure(
-                text=f"🔴 Lỗi load model: {str(e)[:50]}",
+                text=f"Lỗi load model: {str(e)[:50]}",
                 text_color=COLORS["accent_danger"]
             )
             for lbl in self.metric_labels.values():
@@ -513,8 +538,8 @@ class PredictionView(ctk.CTkFrame):
         legit = total - fraud
         
         self.stat_total.configure(text=f"Tổng: {total}")
-        self.stat_fraud.configure(text=f"⚠ Gian lận: {fraud}")
-        self.stat_legit.configure(text=f"✓ Hợp lệ: {legit}")
+        self.stat_fraud.configure(text=f"Gian lận: {fraud}")
+        self.stat_legit.configure(text=f"Hợp lệ: {legit}")
         
         # Show ALL columns, but move prediction_label and confidence to front
         priority_cols = ['prediction_label', 'fraud_prob']

@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.config.theme import COLORS, FONTS
 from src.views.PredictionView import PredictionView
 from src.views.ModelView import ModelView
+from src.config.icons import icon_xl, icon_md
 
 
 class App(ctk.CTk):
@@ -50,10 +51,11 @@ class App(ctk.CTk):
         brand_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         brand_frame.pack(fill="x", padx=20, pady=(24, 8))
         
+        self._logo_icon = icon_xl("shield")
         logo_label = ctk.CTkLabel(
             brand_frame,
-            text="🛡",
-            font=("Segoe UI", 32),
+            text="",
+            image=self._logo_icon,
         )
         logo_label.pack(anchor="w")
         
@@ -94,15 +96,21 @@ class App(ctk.CTk):
         nav_label.pack(fill="x", padx=24, pady=(0, 8))
         
         self.nav_buttons = {}
+        self._nav_icons = {
+            "prediction": icon_md("search"),
+            "models": icon_md("brain"),
+        }
         nav_items = [
-            ("prediction", "🔍  Dự đoán"),
-            ("models", "🧠  Quản lý Model"),
+            ("prediction", "  Dự đoán"),
+            ("models", "  Quản lý Model"),
         ]
         
         for key, label in nav_items:
             btn = ctk.CTkButton(
                 self.sidebar,
                 text=label,
+                image=self._nav_icons[key],
+                compound="left",
                 font=FONTS["body"],
                 anchor="w",
                 fg_color="transparent",

@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
+import os
 from src.config.theme import COLORS, FONTS
 
 
@@ -187,7 +188,7 @@ class ProgressCard(ctk.CTkFrame):
         )
         
         header = ctk.CTkLabel(
-            self, text="📋 Training Log",
+            self, text="Training Log",
             font=FONTS["heading"],
             text_color=COLORS["text_primary"],
             anchor="w"
@@ -278,24 +279,27 @@ class MetricCard(ctk.CTkFrame):
 class ModernDialog(ctk.CTkToplevel):
     """A modern, dark-themed modal dialog that replaces messagebox."""
     
+    # Resolve icon directory relative to this file
+    _ICON_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "icons")
+    
     DIALOG_CONFIG = {
         "info": {
-            "icon": "ℹ️",
+            "icon_file": "info.png",
             "color": "#6c5ce7",
             "title_default": "Thông báo",
         },
         "success": {
-            "icon": "✅",
+            "icon_file": "success.png",
             "color": "#00b894",
             "title_default": "Thành công",
         },
         "warning": {
-            "icon": "⚠️",
+            "icon_file": "warning.png",
             "color": "#fdcb6e",
             "title_default": "Cảnh báo",
         },
         "error": {
-            "icon": "❌",
+            "icon_file": "error.png",
             "color": "#ff6b6b",
             "title_default": "Lỗi",
         },
@@ -342,10 +346,16 @@ class ModernDialog(ctk.CTkToplevel):
         header = ctk.CTkFrame(outer, fg_color="transparent")
         header.pack(fill="x", padx=24, pady=(12, 4))
         
-        icon_lbl = ctk.CTkLabel(
-            header, text=config["icon"],
-            font=("Segoe UI", 28),
-        )
+        # Load icon image
+        icon_path = os.path.join(self._ICON_DIR, config["icon_file"])
+        try:
+            from PIL import Image
+            pil_img = Image.open(icon_path)
+            self._icon_image = ctk.CTkImage(light_image=pil_img, dark_image=pil_img, size=(40, 40))
+            icon_lbl = ctk.CTkLabel(header, image=self._icon_image, text="")
+        except Exception:
+            # Fallback to text if image fails
+            icon_lbl = ctk.CTkLabel(header, text="●", font=("Segoe UI", 28), text_color=accent)
         icon_lbl.pack(side="left", padx=(0, 12))
         
         title_lbl = ctk.CTkLabel(

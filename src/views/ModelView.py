@@ -13,6 +13,7 @@ from src.components.widgets import (
 )
 from src.services.ModelTrainningService import ModelTrainningService
 from src.services.DataPreprocessingService import DataPreprocessingService
+from src.config.icons import icon_md, icon_lg
 
 
 class ModelView(ctk.CTkFrame):
@@ -33,8 +34,11 @@ class ModelView(ctk.CTkFrame):
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.pack(fill="x", pady=(0, 16))
         
+        self._icon_brain = icon_lg("brain")
         title = ctk.CTkLabel(
-            header, text="🧠  Quản lý Model",
+            header, text="  Quản lý Model",
+            image=self._icon_brain,
+            compound="left",
             font=FONTS["title"],
             text_color=COLORS["text_primary"],
             anchor="w"
@@ -65,7 +69,7 @@ class ModelView(ctk.CTkFrame):
         top_frame.grid_rowconfigure(0, weight=1)
         
         # Model list table
-        table_card = StyledCard(top_frame, title="📋 Danh sách Model")
+        table_card = StyledCard(top_frame, title="Danh sách Model")
         table_card.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
         
         # Sort controls
@@ -99,8 +103,10 @@ class ModelView(ctk.CTkFrame):
         sort_order_btn.pack(side="left")
         self.sort_order_btn = sort_order_btn
         
+        self._icon_refresh = icon_md("refresh")
         refresh_btn = StyledButton(
-            sort_frame, text="⟳ Làm mới", width=100,
+            sort_frame, text=" Làm mới", width=120,
+            image=self._icon_refresh, compound="left",
             variant="secondary", height=32,
             command=self._refresh_model_list
         )
@@ -113,7 +119,8 @@ class ModelView(ctk.CTkFrame):
         self.model_table.pack(fill="both", expand=True, padx=20, pady=(0, 16))
         
         # Best model metrics
-        metrics_card = StyledCard(top_frame, title="🏆 Model tốt nhất")
+        self._icon_trophy = icon_md("trophy")
+        metrics_card = StyledCard(top_frame, title=" Model tốt nhất")
         metrics_card.grid(row=0, column=1, sticky="nsew", padx=(8, 0))
         
         self.best_model_label = ctk.CTkLabel(
@@ -145,7 +152,8 @@ class ModelView(ctk.CTkFrame):
         bottom_frame.grid_rowconfigure(0, weight=1)
         
         # Train controls
-        train_card = StyledCard(bottom_frame, title="🔄 Retrain Model")
+        self._icon_retrain = icon_md("refresh")
+        train_card = StyledCard(bottom_frame, title=" Retrain Model")
         train_card.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
         
         train_inner = ctk.CTkFrame(train_card, fg_color="transparent")
@@ -153,20 +161,32 @@ class ModelView(ctk.CTkFrame):
         
         algo_label = ctk.CTkLabel(
             train_inner, text="Chọn thuật toán:",
-            font=FONTS["small"],
+            font=FONTS["body_bold"],
             text_color=COLORS["text_secondary"],
             anchor="w"
         )
         algo_label.pack(fill="x")
         
         self.algo_var = ctk.StringVar(value="Random Forest")
-        algo_menu = StyledOptionMenu(
-            train_inner,
-            variable=self.algo_var,
-            values=["Random Forest", "XGBoost", "Cả hai"],
-            width=250
-        )
-        algo_menu.pack(fill="x", pady=(4, 12))
+        
+        algo_frame = ctk.CTkFrame(train_inner, fg_color="transparent")
+        algo_frame.pack(fill="x", pady=(6, 12))
+        
+        for algo_name in ["Random Forest", "XGBoost", "Logistic Regression"]:
+            rb = ctk.CTkRadioButton(
+                algo_frame,
+                text=algo_name,
+                variable=self.algo_var,
+                value=algo_name,
+                font=FONTS["body"],
+                text_color=COLORS["text_primary"],
+                fg_color=COLORS["accent_primary"],
+                hover_color=COLORS["accent_primary_hover"],
+                border_color=COLORS["border"],
+                radiobutton_width=22,
+                radiobutton_height=22,
+            )
+            rb.pack(anchor="w", pady=3)
         
         data_label = ctk.CTkLabel(
             train_inner, text="Dữ liệu train:",
@@ -180,15 +200,19 @@ class ModelView(ctk.CTkFrame):
         browse_frame = ctk.CTkFrame(train_inner, fg_color="transparent")
         browse_frame.pack(fill="x", pady=(4, 4))
         
+        self._icon_file = icon_md("file")
         browse_file_btn = StyledButton(
-            browse_frame, text="📄 Chọn file CSV", width=140,
+            browse_frame, text=" Chọn file CSV", width=160,
+            image=self._icon_file, compound="left",
             variant="secondary", height=36,
             command=self._browse_train_file
         )
         browse_file_btn.pack(side="left", padx=(0, 6))
         
+        self._icon_folder = icon_md("folder")
         browse_folder_btn = StyledButton(
-            browse_frame, text="📁 Chọn thư mục", width=140,
+            browse_frame, text=" Chọn thư mục", width=160,
+            image=self._icon_folder, compound="left",
             variant="secondary", height=36,
             command=self._browse_train_folder
         )
@@ -196,7 +220,7 @@ class ModelView(ctk.CTkFrame):
         
         self.train_data_path = ctk.StringVar(value=AppConfig.TRAIN_DATA_PATH)
         self.data_path_label = ctk.CTkLabel(
-            train_inner, text=f"📄 {AppConfig.TRAIN_DATA_PATH}",
+            train_inner, text=f"{AppConfig.TRAIN_DATA_PATH}",
             font=FONTS["mono_small"],
             text_color=COLORS["text_muted"],
             anchor="w",
@@ -204,15 +228,19 @@ class ModelView(ctk.CTkFrame):
         )
         self.data_path_label.pack(fill="x", pady=(4, 16))
         
+        self._icon_rocket = icon_md("rocket")
         self.train_btn = StyledButton(
-            train_inner, text="🚀 Bắt đầu Train",
+            train_inner, text=" Bắt đầu Train",
+            image=self._icon_rocket, compound="left",
             command=self._start_training,
             height=44,
         )
         self.train_btn.pack(fill="x", pady=(0, 8))
         
+        self._icon_stop = icon_md("stop")
         self.stop_btn = StyledButton(
-            train_inner, text="⏹ Dừng lại",
+            train_inner, text=" Dừng lại",
+            image=self._icon_stop, compound="left",
             variant="danger",
             command=self._stop_training,
             state="disabled",
@@ -240,7 +268,12 @@ class ModelView(ctk.CTkFrame):
                        if f.endswith(('.pkl', '.joblib'))]
         
         for model_file in model_files:
-            model_type = "Random Forest" if "random_forest" in model_file else "XGBoost"
+            if "random_forest" in model_file:
+                model_type = "Random Forest"
+            elif "logistic_regression" in model_file:
+                model_type = "Logistic Regression"
+            else:
+                model_type = "XGBoost"
             base_name = model_file.rsplit('.', 1)[0]
             score_file = base_name + ".txt"
             score_path = os.path.join(model_dir, score_file)
@@ -341,14 +374,14 @@ class ModelView(ctk.CTkFrame):
         )
         if path:
             self.train_data_path.set(path)
-            self.data_path_label.configure(text=f"📄 {path}")
+            self.data_path_label.configure(text=f"{path}")
     
     def _browse_train_folder(self):
         path = filedialog.askdirectory(title="Chọn thư mục chứa file CSV")
         if path:
             self.train_data_path.set(path)
             csv_count = len([f for f in os.listdir(path) if f.endswith('.csv')])
-            self.data_path_label.configure(text=f"📁 {path} ({csv_count} files)")
+            self.data_path_label.configure(text=f"{path} ({csv_count} files)")
     
     # ═══════════════════════════════════════════════════════════
     # Training
@@ -420,23 +453,29 @@ class ModelView(ctk.CTkFrame):
             
             sys.stdout = TeeOutput(old_stdout, captured, self._log)
             
-            if algo in ("Random Forest", "Cả hai"):
-                self._update_progress(0.30, "🌲 Đang train Random Forest...")
+            if algo == "Random Forest":
+                self._update_progress(0.30, "Đang train Random Forest...")
                 self._log("\n" + "="*50)
-                self._log("🌲 BẮT ĐẦU TRAIN RANDOM FOREST")
+                self._log("BẮT ĐẦU TRAIN RANDOM FOREST")
                 self._log("="*50)
                 self.training_service.startRandomForest(X_train, X_test, y_train, y_test)
-                self._update_progress(0.65 if algo == "Cả hai" else 0.90,
-                                      "✅ Random Forest hoàn thành!")
+                self._update_progress(0.90, "Random Forest hoàn thành!")
             
-            if algo in ("XGBoost", "Cả hai"):
-                self._update_progress(0.65 if algo == "Cả hai" else 0.30,
-                                      "⚡ Đang train XGBoost...")
+            elif algo == "XGBoost":
+                self._update_progress(0.30, "Đang train XGBoost...")
                 self._log("\n" + "="*50)
-                self._log("⚡ BẮT ĐẦU TRAIN XGBOOST")
+                self._log("BẮT ĐẦU TRAIN XGBOOST")
                 self._log("="*50)
                 self.training_service.startXGBoost(X_train, X_test, y_train, y_test)
-                self._update_progress(0.95, "✅ XGBoost hoàn thành!")
+                self._update_progress(0.90, "XGBoost hoàn thành!")
+            
+            elif algo == "Logistic Regression":
+                self._update_progress(0.30, "Đang train Logistic Regression...")
+                self._log("\n" + "="*50)
+                self._log("BẮT ĐẦU TRAIN LOGISTIC REGRESSION")
+                self._log("="*50)
+                self.training_service.startLogisticRegression(X_train, X_test, y_train, y_test)
+                self._update_progress(0.90, "Logistic Regression hoàn thành!")
             
             sys.stdout = old_stdout
             

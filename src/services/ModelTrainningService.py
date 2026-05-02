@@ -14,6 +14,7 @@ from src.config.AppConfig import AppConfig
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix, recall_score, precision_score, f1_score, accuracy_score
 from xgboost import XGBClassifier
+from sklearn.linear_model import LogisticRegression
 
 class ModelTrainningService:
     def __init__(self):
@@ -238,10 +239,50 @@ class ModelTrainningService:
         print(f"\n📊 Score:")
         print(xg_score)
 
-
         with open(AppConfig.MODEL_OUT_DIR + f"/xgboost_{timestamp}.txt", "w") as f:
             f.write(xg_score.to_string(index=False))
         return xg_pipeline
+    
+    def startLogisticRegression(self, X_train, X_test, y_train, y_test):
+        categorical_onehot = ['category']
+        target_cols = ['merchant', 'job']
+        numeric_cols = ['amt', 'city_pop', 'age', 'hour', 'day_of_week', 'distance']
+
+        lr_pipeline = Pipeline([
+            ('gender', FunctionTransformer(encode_gender)),
+            ('target_encode', TargetEncoder(cols=target_cols)),
+            ('column_transformer', ColumnTransformer([
+                ('onehot', OneHotEncoder(handle_unknown='ignore'), categorical_onehot),
+                ('num', StandardScaler(), numeric_cols)
+            ], remainder='passthrough')),
+            ('smote', SMOTE()),
+            ('model', LogisticRegression(
+                max_iter=1000,
+                n_jobs=-1
+            ))
+        ])
+
+        lr_pipeline.fit(X_train, y_train)
+
+        lr_y_pred = lr_pipeline.predict(X_test)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        joblib.dump(lr_pipeline, AppConfig.MODEL_OUT_DIR + f"/logistic_regression_{timestamp}.pkl")
+
+        smote_lr_recall = recall_score(y_test, lr_y_pred)
+        smote_lr_precision = precision_score(y_test, lr_y_pred)
+        smote_lr_f1 = f1_score(y_test, lr_y_pred)
+        smote_lr_accuracy = accuracy_score(y_test, lr_y_pred)
+
+        lr = [(smote_lr_recall, smote_lr_precision, smote_lr_f1, smote_lr_accuracy)]
+
+        lr_score = pd.DataFrame(data=lr, columns=['Recall', 'Precision', 'F1 Score', 'Accuracy'])
+        print(f"\n Score:")
+        print(lr_score)
+
+        with open(AppConfig.MODEL_OUT_DIR + f"/logistic_regression_{timestamp}.txt", "w") as f:
+            f.write(lr_score.to_string(index=False))
+        return lr_pipeline
 
     def train(self, df: pd.DataFrame):
         pass
