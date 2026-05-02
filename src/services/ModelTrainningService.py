@@ -22,13 +22,14 @@ class ModelTrainningService:
     def __init__(self):
         pass
     
-    def _get_next_version(self) -> int:
-        """Scan MODEL_OUT_DIR and return the next model version number."""
+    def _get_next_version(self, prefix: str) -> int:
+        """Scan MODEL_OUT_DIR and return the next model version number for a given prefix."""
         import re
         model_dir = AppConfig.MODEL_OUT_DIR
         if not os.path.exists(model_dir):
             return 1
-        pattern = re.compile(r'fraud_model_v(\d+)_')
+        # Tìm pattern: prefix_v(số)_
+        pattern = re.compile(rf'{prefix}_v(\d+)_')
         max_v = 0
         for fname in os.listdir(model_dir):
             m = pattern.search(fname)
@@ -161,21 +162,26 @@ class ModelTrainningService:
         rf_y_pred = rf_pipeline.predict(X_test)
         print(f"  ✓ Predict xong trong {time.time() - pred_start:.2f}s")
 
+        # Naming convention: random_forest_v(x)_(timestamp).pkl
+        prefix = "random_forest"
+        version = self._get_next_version(prefix)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        joblib.dump(rf_pipeline, AppConfig.MODEL_OUT_DIR + f"/random_forest_{timestamp}.pkl")
+        model_filename = f"{prefix}_v{version}_{timestamp}"
+        
+        joblib.dump(rf_pipeline, AppConfig.MODEL_OUT_DIR + f"/{model_filename}.pkl")
+        print(f"\n💾 Model đã lưu: {model_filename}.pkl")
         
         smote_rf_Recall = recall_score(y_test, rf_y_pred)
         smote_rf_Precision = precision_score(y_test, rf_y_pred)
         smote_rf_f1 = f1_score(y_test, rf_y_pred)
-        smote_rf_accuracy = accuracy_score(y_test, rf_y_pred)
 
-        rdf = [(smote_rf_Recall, smote_rf_Precision, smote_rf_f1, smote_rf_accuracy)]
+        rdf = [(smote_rf_Recall, smote_rf_Precision, smote_rf_f1)]
 
-        rf_score = pd.DataFrame(data = rdf, columns=['Recall','Precision','F1 Score', 'Accuracy'])
+        rf_score = pd.DataFrame(data = rdf, columns=['Recall','Precision','F1 Score'])
         print(f"\n📊 Score:")
         print(rf_score)
         
-        with open(AppConfig.MODEL_OUT_DIR + f"/random_forest_{timestamp}.txt", "w") as f:
+        with open(AppConfig.MODEL_OUT_DIR + f"/{model_filename}.txt", "w") as f:
             f.write(rf_score.to_string(index=False))
         return rf_pipeline
 
@@ -193,8 +199,8 @@ class ModelTrainningService:
                 ('onehot', OneHotEncoder(handle_unknown='ignore'), categorical_onehot),
                 ('num', StandardScaler(), numeric_cols)
             ], remainder='passthrough')),
-            ('smote', SMOTE()),
-            ('model', XGBClassifier(verbosity=1, n_jobs=-1))
+            ('smote', SMOTE(k_neighbors=5)),
+            ('model', XGBClassifier(verbosity=1, n_jobs=-1,learning_rate= 0.3, max_depth= 6, n_estimators = 400))
         ]
 
         total_steps = len(steps)
@@ -241,10 +247,11 @@ class ModelTrainningService:
         xg_y_pred = xg_pipeline.predict(X_test)
         print(f"  ✓ Predict xong trong {time.time() - pred_start:.2f}s")
 
-        # Đặt tên model: fraud_model_v(x)_(timestamp).pkl
-        version = self._get_next_version()
+        # Đặt tên model: xgboost_v(x)_(timestamp).pkl
+        prefix = "xgboost"
+        version = self._get_next_version(prefix)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        model_filename = f"fraud_model_v{version}_{timestamp}"
+        model_filename = f"{prefix}_v{version}_{timestamp}"
         joblib.dump(xg_pipeline, AppConfig.MODEL_OUT_DIR + f"/{model_filename}.pkl")
         print(f"\n💾 Model đã lưu: {model_filename}.pkl")
 
@@ -285,21 +292,26 @@ class ModelTrainningService:
 
         lr_y_pred = lr_pipeline.predict(X_test)
 
+        # Naming convention: logistic_regression_v(x)_(timestamp).pkl
+        prefix = "logistic_regression"
+        version = self._get_next_version(prefix)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        joblib.dump(lr_pipeline, AppConfig.MODEL_OUT_DIR + f"/logistic_regression_{timestamp}.pkl")
+        model_filename = f"{prefix}_v{version}_{timestamp}"
+        
+        joblib.dump(lr_pipeline, AppConfig.MODEL_OUT_DIR + f"/{model_filename}.pkl")
+        print(f"\n💾 Model đã lưu: {model_filename}.pkl")
 
         smote_lr_recall = recall_score(y_test, lr_y_pred)
         smote_lr_precision = precision_score(y_test, lr_y_pred)
         smote_lr_f1 = f1_score(y_test, lr_y_pred)
-        smote_lr_accuracy = accuracy_score(y_test, lr_y_pred)
 
-        lr = [(smote_lr_recall, smote_lr_precision, smote_lr_f1, smote_lr_accuracy)]
+        lr = [(smote_lr_recall, smote_lr_precision, smote_lr_f1)]
 
-        lr_score = pd.DataFrame(data=lr, columns=['Recall', 'Precision', 'F1 Score', 'Accuracy'])
+        lr_score = pd.DataFrame(data=lr, columns=['Recall', 'Precision', 'F1 Score'])
         print(f"\n Score:")
         print(lr_score)
 
-        with open(AppConfig.MODEL_OUT_DIR + f"/logistic_regression_{timestamp}.txt", "w") as f:
+        with open(AppConfig.MODEL_OUT_DIR + f"/{model_filename}.txt", "w") as f:
             f.write(lr_score.to_string(index=False))
         return lr_pipeline
 

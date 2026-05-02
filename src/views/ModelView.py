@@ -166,18 +166,21 @@ class ModelView(ctk.CTkFrame):
         )
         algo_label.pack(fill="x")
         
-        algo_badge_frame = ctk.CTkFrame(
-            train_inner,
-            fg_color=COLORS["accent_primary"],
-            corner_radius=8,
-        )
-        algo_badge_frame.pack(anchor="w", pady=(6, 12))
-        ctk.CTkLabel(
-            algo_badge_frame,
-            text="  XGBoost  ",
-            font=FONTS["body_bold"],
-            text_color="#FFFFFF",
-        ).pack(padx=4, pady=4)
+        self.algo_var = ctk.StringVar(value="XGBoost")
+        algo_options = [
+            ("XGBoost", "XGBoost"),
+            ("Random Forest", "Random Forest"),
+            ("Logistic Regression", "Logistic Regression")
+        ]
+        
+        for text, value in algo_options:
+            rb = ctk.CTkRadioButton(
+                train_inner, text=text, variable=self.algo_var, value=value,
+                font=FONTS["small"], text_color=COLORS["text_primary"],
+                fg_color=COLORS["accent_primary"], border_color=COLORS["border"],
+                hover_color=COLORS["accent_secondary"]
+            )
+            rb.pack(anchor="w", pady=4)
         
         data_label = ctk.CTkLabel(
             train_inner, text="Dữ liệu train:",
@@ -259,11 +262,12 @@ class ModelView(ctk.CTkFrame):
                        if f.endswith(('.pkl', '.joblib'))]
         
         for model_file in model_files:
-            if "random_forest" in model_file:
+            model_file_lower = model_file.lower()
+            if "random_forest" in model_file_lower:
                 model_type = "Random Forest"
-            elif "logistic_regression" in model_file:
+            elif "logistic_regression" in model_file_lower:
                 model_type = "Logistic Regression"
-            elif "fraud_model_v" in model_file or "xgboost" in model_file:
+            elif "xgboost" in model_file_lower or "fraud_model" in model_file_lower:
                 model_type = "XGBoost"
             else:
                 model_type = "Unknown"
@@ -393,11 +397,13 @@ class ModelView(ctk.CTkFrame):
         self.stop_btn.configure(state="normal")
         self.progress_card.clear_log()
         
-        # Run training in background thread (thuật toán cố định: XGBoost)
-        thread = threading.Thread(target=self._train_worker, args=(data_path,), daemon=True)
+        algo = self.algo_var.get()
+        
+        # Run training in background thread
+        thread = threading.Thread(target=self._train_worker, args=(data_path, algo), daemon=True)
         thread.start()
     
-    def _train_worker(self, data_path):
+    def _train_worker(self, data_path, algo):
         import sys
         import io
         
@@ -443,13 +449,28 @@ class ModelView(ctk.CTkFrame):
             
             sys.stdout = TeeOutput(old_stdout, captured, self._log)
             
-            # Thuật toán cố định: XGBoost
-            self._update_progress(0.30, "Đang train XGBoost...")
-            self._log("\n" + "="*50)
-            self._log("BẮT ĐẦU TRAIN XGBOOST")
-            self._log("="*50)
-            self.training_service.startXGBoost(X_train, X_test, y_train, y_test)
-            self._update_progress(0.90, "XGBoost hoàn thành!")
+            # Chọn thuật toán train
+            if algo == "Random Forest":
+                self._update_progress(0.30, "Đang train Random Forest...")
+                self._log("\n" + "="*50)
+                self._log("BẮT ĐẦU TRAIN RANDOM FOREST")
+                self._log("="*50)
+                self.training_service.startRandomForest(X_train, X_test, y_train, y_test)
+                self._update_progress(0.90, "Random Forest hoàn thành!")
+            elif algo == "Logistic Regression":
+                self._update_progress(0.30, "Đang train Logistic Regression...")
+                self._log("\n" + "="*50)
+                self._log("BẮT ĐẦU TRAIN LOGISTIC REGRESSION")
+                self._log("="*50)
+                self.training_service.startLogisticRegression(X_train, X_test, y_train, y_test)
+                self._update_progress(0.90, "Logistic Regression hoàn thành!")
+            else: # Default: XGBoost
+                self._update_progress(0.30, "Đang train XGBoost...")
+                self._log("\n" + "="*50)
+                self._log("BẮT ĐẦU TRAIN XGBOOST")
+                self._log("="*50)
+                self.training_service.startXGBoost(X_train, X_test, y_train, y_test)
+                self._update_progress(0.90, "XGBoost hoàn thành!")
             
             sys.stdout = old_stdout
             

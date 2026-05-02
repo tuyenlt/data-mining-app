@@ -396,12 +396,15 @@ class PredictionView(ctk.CTkFrame):
             model_path = os.path.join(AppConfig.MODEL_OUT_DIR, model_name)
             self.prediction_service.load_model(model_path)
             
-            if "random_forest" in model_name:
+            model_name_lower = model_name.lower()
+            if "random_forest" in model_name_lower:
                 model_type = "Random Forest"
-            elif "logistic_regression" in model_name:
+            elif "logistic_regression" in model_name_lower:
                 model_type = "Logistic Regression"
-            else:
+            elif "xgboost" in model_name_lower or "fraud_model" in model_name_lower:
                 model_type = "XGBoost"
+            else:
+                model_type = "Unknown"
             self.model_status.configure(
                 text=f"Đã load: {model_type} ({model_name})",
                 text_color=COLORS["accent_success"]
