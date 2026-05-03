@@ -57,7 +57,9 @@ class ModelView(ctk.CTkFrame):
         content = ctk.CTkFrame(self, fg_color="transparent")
         content.pack(fill="both", expand=True)
         content.grid_columnconfigure(0, weight=1)
-        content.grid_rowconfigure(1, weight=1)
+        # Make TOP area shorter than BOTTOM area
+        content.grid_rowconfigure(0, weight=1)
+        content.grid_rowconfigure(1, weight=3)
         
         # ═══════════════════════════════════════════════════
         # TOP: Model comparison table + metrics

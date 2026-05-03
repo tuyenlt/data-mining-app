@@ -73,13 +73,13 @@ class PredictionView(ctk.CTkFrame):
         # ── Content: left (input) + right (result)
         content = ctk.CTkFrame(self, fg_color="transparent")
         content.pack(fill="both", expand=True)
-        content.grid_columnconfigure(0, weight=2, minsize=450)
+        content.grid_columnconfigure(0, weight=2, minsize=480)
         content.grid_columnconfigure(1, weight=3)
         content.grid_rowconfigure(0, weight=1)
         
         # ─────────────── LEFT PANEL ───────────────
         left_panel = ctk.CTkFrame(content, fg_color="transparent")
-        left_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+        left_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 12))
         
         # Model selection card
         model_card = StyledCard(left_panel, title="Chọn Model")

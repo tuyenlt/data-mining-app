@@ -23,7 +23,7 @@ class StyledCard(ctk.CTkFrame):
                 text_color=COLORS["text_primary"],
                 anchor="w"
             )
-            label.pack(fill="x", padx=20, pady=(16, 8))
+            label.pack(fill="x", padx=16, pady=(12, 6))
 
 
 class StyledButton(ctk.CTkButton):
@@ -43,7 +43,7 @@ class StyledButton(ctk.CTkButton):
             "text_color": COLORS["text_on_accent"],
             "font": FONTS["body_bold"],
             "corner_radius": 10,
-            "height": 44,
+            "height": 38,
         }
         defaults.update(kwargs)
         super().__init__(master, **defaults)
@@ -59,7 +59,7 @@ class StyledEntry(ctk.CTkEntry):
             "placeholder_text_color": COLORS["text_muted"],
             "font": FONTS["body"],
             "corner_radius": 10,
-            "height": 44,
+            "height": 38,
             "border_width": 1,
         }
         defaults.update(kwargs)
@@ -79,7 +79,7 @@ class StyledOptionMenu(ctk.CTkOptionMenu):
             "dropdown_text_color": COLORS["text_primary"],
             "dropdown_hover_color": COLORS["accent_primary"],
             "corner_radius": 10,
-            "height": 44,
+            "height": 38,
         }
         defaults.update(kwargs)
         super().__init__(master, **defaults)
@@ -115,14 +115,14 @@ class DataTable(ctk.CTkFrame):
             foreground=COLORS["text_primary"],
             fieldbackground=COLORS["bg_card"],
             borderwidth=0,
-            font=("Segoe UI", 14),
-            rowheight=40,
+            font=("Segoe UI", 11),
+            rowheight=32,
         )
         style.configure(
             "Dark.Treeview.Heading",
             background=COLORS["bg_sidebar"],
             foreground=COLORS["accent_secondary"],
-            font=("Segoe UI", 14, "bold"),
+            font=("Segoe UI", 11, "bold"),
             borderwidth=0,
             relief="flat",
         )
@@ -186,15 +186,16 @@ class ProgressCard(ctk.CTkFrame):
             border_color=COLORS["border"],
             **kwargs
         )
-        
+
         header = ctk.CTkLabel(
-            self, text="Training Log",
+            self,
+            text="Training Log",
             font=FONTS["heading"],
             text_color=COLORS["text_primary"],
-            anchor="w"
+            anchor="w",
         )
-        header.pack(fill="x", padx=20, pady=(16, 8))
-        
+        header.pack(fill="x", padx=16, pady=(12, 6))
+
         self.progress_bar = ctk.CTkProgressBar(
             self,
             progress_color=COLORS["accent_primary"],
@@ -202,17 +203,18 @@ class ProgressCard(ctk.CTkFrame):
             corner_radius=6,
             height=12,
         )
-        self.progress_bar.pack(fill="x", padx=20, pady=(0, 8))
+        self.progress_bar.pack(fill="x", padx=16, pady=(0, 6))
         self.progress_bar.set(0)
-        
+
         self.status_label = ctk.CTkLabel(
-            self, text="Sẵn sàng",
+            self,
+            text="Sẵn sàng",
             font=FONTS["small"],
             text_color=COLORS["text_secondary"],
-            anchor="w"
+            anchor="w",
         )
-        self.status_label.pack(fill="x", padx=20, pady=(0, 4))
-        
+        self.status_label.pack(fill="x", padx=16, pady=(0, 4))
+
         self.log_text = ctk.CTkTextbox(
             self,
             fg_color=COLORS["bg_input"],
@@ -223,7 +225,7 @@ class ProgressCard(ctk.CTkFrame):
             border_color=COLORS["border"],
             height=200,
         )
-        self.log_text.pack(fill="both", expand=True, padx=20, pady=(0, 16))
+        self.log_text.pack(fill="both", expand=True, padx=16, pady=(0, 12))
     
     def set_progress(self, value, status_text=""):
         self.progress_bar.set(value)
@@ -257,14 +259,14 @@ class MetricCard(ctk.CTkFrame):
             font=FONTS["small"],
             text_color=COLORS["text_secondary"]
         )
-        title_lbl.pack(padx=16, pady=(12, 2))
+        title_lbl.pack(padx=16, pady=(8, 2))
         
         self.value_lbl = ctk.CTkLabel(
             self, text=value,
-            font=("Segoe UI", 26, "bold"),
+            font=("Segoe UI", 16, "bold"),
             text_color=color or COLORS["accent_secondary"]
         )
-        self.value_lbl.pack(padx=16, pady=(0, 12))
+        self.value_lbl.pack(padx=16, pady=(0, 8))
     
     def set_value(self, value, color=None):
         self.value_lbl.configure(text=value)

@@ -20,8 +20,8 @@ class App(ctk.CTk):
         
         # ── Window Config
         self.title("🛡 Fraud Detection — Data Mining App")
-        self.geometry("1600x900")
-        self.minsize(1200, 800)
+        self.geometry("1920x1080")
+        self.minsize(1400, 900)
         # Maximize window (Linux-compatible)
         self.after(10, lambda: self.attributes('-zoomed', True))
         
@@ -40,7 +40,7 @@ class App(ctk.CTk):
         self.sidebar = ctk.CTkFrame(
             self,
             fg_color=COLORS["bg_sidebar"],
-            width=280,
+            width=290,
             corner_radius=0,
             border_width=0,
         )

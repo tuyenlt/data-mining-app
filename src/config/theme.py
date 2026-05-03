@@ -37,15 +37,15 @@ COLORS = {
 }
 
 FONTS = {
-    "title": ("Segoe UI", 28, "bold"),
-    "subtitle": ("Segoe UI", 20, "bold"),
-    "heading": ("Segoe UI", 17, "bold"),
-    "body": ("Segoe UI", 15),
-    "body_bold": ("Segoe UI", 15, "bold"),
-    "small": ("Segoe UI", 14),
-    "small_bold": ("Segoe UI", 14, "bold"),
-    "tiny": ("Segoe UI", 14),
-    "mono": ("Consolas", 14),
-    "mono_small": ("Consolas", 13),
+    "title": ("Segoe UI", 22, "bold"),
+    "subtitle": ("Segoe UI", 18, "bold"),
+    "heading": ("Segoe UI", 15, "bold"),
+    "body": ("Segoe UI", 13),
+    "body_bold": ("Segoe UI", 13, "bold"),
+    "small": ("Segoe UI", 12),
+    "small_bold": ("Segoe UI", 12, "bold"),
+    "tiny": ("Segoe UI", 11),
+    "mono": ("Consolas", 12),
+    "mono_small": ("Consolas", 11),
     "icon": ("Segoe UI", 22),
 }

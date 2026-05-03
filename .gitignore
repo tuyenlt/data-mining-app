@@ -65,7 +65,7 @@ data/
 Model files (ML/AI)
 =========================
 
-*.pkl
+#*.pkl
 *.joblib
 #models/
 
